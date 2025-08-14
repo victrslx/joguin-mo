@@ -428,22 +428,35 @@
 
         function drawEnvelope() {
             const { x, y, w, h } = player;
+
+            const vw = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+            // quanto menor a tela, maior o scale (entre 1.0 e 2.2)
+            const s = Math.max(1, Math.min(2.2, 480 / Math.max(vw, 360)));
+
+            const W = w * s;
+            const H = h * s;
+
             ctx.save();
             ctx.translate(x, y);
             ctx.fillStyle = "#ffe8ec";
             ctx.strokeStyle = "#f5c4cf";
             ctx.lineWidth = 2 * dpr;
+
             // body
-            roundRect(ctx, -w / 2, -h / 2, w, h, 6 * dpr, true, true);
+            roundRect(ctx, -W / 2, -H / 2, W, H, 6 * dpr * s, true, true);
+
             // flap
             ctx.beginPath();
-            ctx.moveTo(-w / 2, -h / 2);
-            ctx.lineTo(0, h * 0.05 - h / 2);
-            ctx.lineTo(w / 2, -h / 2);
+            ctx.moveTo(-W / 2, -H / 2);
+            ctx.lineTo(0, H * 0.05 - H / 2);
+            ctx.lineTo(W / 2, -H / 2);
             ctx.closePath();
-            ctx.fillStyle = "#ffd7e2"; ctx.fill();
-            // tiny heart stamp
-            drawHeart(0, -h / 2 - 2, 6 * dpr, "#ff4d6d");
+            ctx.fillStyle = "#ffd7e2";
+            ctx.fill();
+
+            // tiny heart stamp (escala junto)
+            drawHeart(0, -H / 2 - 2 * dpr, 6 * dpr * s, "#ff4d6d");
+
             ctx.restore();
         }
         function roundRect(c, x, y, w, h, r, fill, stroke) {
