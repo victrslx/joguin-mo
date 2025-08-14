@@ -1,0 +1,647 @@
+<!doctype html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>Joguin pro Mozão ❤️</title>
+
+    <!-- Preview bonito ao compartilhar -->
+    <meta property="og:title" content="Joguin pro Mozão ❤️">
+    <meta property="og:description" content="Um joguinho fofinho feito pra quando bater saudade.">
+    <meta property="og:type" content="website">
+    <meta name="theme-color" content="#0e2f2f">
+
+    <style>
+        :root {
+            --bg1: #062b2b;
+            --bg2: #0f4242;
+            --card: #ffffff;
+            --txt: #0e2f2f;
+            --accent: #ff4d6d;
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            overflow: hidden;
+            background: radial-gradient(1200px 1200px at 50% 10%, var(--bg2), var(--bg1));
+            color: #fff;
+            font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+        }
+
+        /* layout */
+        #wrap {
+            width: 100%;
+            height: 100%;
+            display: grid;
+            place-items: center;
+            touch-action: none;
+            -webkit-user-select: none;
+            user-select: none
+        }
+
+        canvas {
+            width: 100vw;
+            height: 100vh;
+            display: block
+        }
+
+        /* HUD */
+        .hud {
+            position: fixed;
+            inset: 0;
+            pointer-events: none
+        }
+
+        .badge {
+            position: fixed;
+            left: 10px;
+            top: 10px;
+            background: #ffffff18;
+            border: 1px solid #ffffff33;
+            padding: .4rem .6rem;
+            border-radius: 12px;
+            backdrop-filter: blur(6px);
+            font-weight: 600
+        }
+
+        .badge .small {
+            font-weight: 400;
+            opacity: .9;
+            font-size: .85rem
+        }
+
+        .badge2 {
+            position: fixed;
+            right: 10px;
+            top: 10px;
+            background: #ffffff18;
+            border: 1px solid #ffffff33;
+            padding: .4rem .6rem;
+            border-radius: 12px;
+            backdrop-filter: blur(6px);
+            font-weight: 600
+        }
+
+        .letters {
+            position: fixed;
+            left: 50%;
+            transform: translateX(-50%);
+            top: 75px;
+            display: flex;
+            gap: .35rem;
+            pointer-events: none
+        }
+
+        .letters span {
+            width: 28px;
+            height: 28px;
+            display: grid;
+            place-items: center;
+            border-radius: 8px;
+            border: 1px solid #ffffff55;
+            background: #ffffff18;
+            font-weight: 800
+        }
+
+        .letters .got {
+            background: #fff;
+            color: var(--txt);
+            border-color: #fff;
+            box-shadow: 0 0 10px #fff7
+        }
+
+        /* overlays */
+        .overlay {
+            position: fixed;
+            inset: 0;
+            display: grid;
+            place-items: center;
+            background: linear-gradient(to bottom, #0008, #0008);
+            padding: 20px
+        }
+
+        .panel {
+            max-width: min(560px, 92vw);
+            background: var(--card);
+            color: var(--txt);
+            border-radius: 20px;
+            padding: 22px 18px;
+            box-shadow: 0 20px 60px #0008
+        }
+
+        h1 {
+            margin: .2rem 0 0 0;
+            font-size: 1.6rem
+        }
+
+        .muted {
+            opacity: .75
+        }
+
+        .btns {
+            display: flex;
+            gap: .6rem;
+            flex-wrap: wrap;
+            margin-top: 14px
+        }
+
+        button {
+            pointer-events: auto;
+            border: none;
+            background: var(--accent);
+            color: #fff;
+            border-radius: 14px;
+            padding: 12px 16px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 6px 20px #ff4d6d55;
+            transition: .15s transform
+        }
+
+        button:active {
+            transform: scale(.98)
+        }
+
+        .ghost {
+            background: #0e2f2f;
+            color: #fff;
+            box-shadow: none;
+            border: 1px solid #ffffff33
+        }
+
+        .note {
+            background: #fff;
+            border-radius: 18px;
+            padding: 14px 16px;
+            margin-top: 12px;
+            color: var(--txt);
+            max-height: 45vh;
+            overflow: auto
+        }
+
+        .center {
+            text-align: center
+        }
+
+        /* heart pulse on title */
+        .title-heart {
+            display: inline-block;
+            animation: pulse 1.2s infinite;
+            transform-origin: center
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1)
+            }
+
+            50% {
+                transform: scale(1.06)
+            }
+        }
+
+        /* toast */
+        .toast {
+            position: fixed;
+            left: 50%;
+            bottom: 18px;
+            transform: translateX(-50%);
+            background: #ffffff18;
+            border: 1px solid #ffffff33;
+            padding: .5rem .75rem;
+            border-radius: 12px;
+            backdrop-filter: blur(6px);
+            display: none
+        }
+
+        .show {
+            display: block
+        }
+
+        @media (max-width:480px) {
+            h1 {
+                font-size: 1.35rem
+            }
+
+            .panel {
+                padding: 18px 14px
+            }
+
+            button {
+                padding: 11px 14px
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="wrap">
+        <canvas id="game" width="360" height="640" aria-label="Love Catcher"></canvas>
+    </div>
+
+    <!-- HUD -->
+    <div class="hud" aria-hidden="true">
+        <div class="badge">Score: <span id="score">0</span> • Vidas: <span id="lives">3</span>
+            <div class="small">Recorde: <span id="best">0</span></div>
+        </div>
+        <div class="badge2">Veloc.: <span id="spd">1x</span></div>
+        <div class="letters" id="letters"></div>
+    </div>
+
+    <!-- Overlays -->
+    <div class="overlay" id="menu">
+        <div class="panel center">
+            <h1> <span class="title-heart">Joguin pro Mozão ❤️</span></h1>
+            <p class="muted">Pega corações e as letras do nome para desbloquear a cartinha.</p>
+            <div class="btns">
+                <button id="startBtn">Começar</button>
+                <button class="ghost" id="howBtn">Como jogar</button>
+            </div>
+            <div class="note" id="how" style="display:none">
+                Use o <b>dedo</b> para mover o envelope. Não deixe 3 corações caírem. Pegue as letras do nome para abrir
+                a carta secreta. Toque no topo direito para <b>pausar</b>.
+            </div>
+        </div>
+    </div>
+
+    <div class="overlay" id="pause" style="display:none">
+        <div class="panel center">
+            <h1>Pausado</h1>
+            <p class="muted">Respira e volta pro amorzinho.</p>
+            <div class="btns">
+                <button id="resumeBtn">Continuar</button>
+                <button class="ghost" id="restartBtn1">Recomeçar</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="overlay" id="letter" style="display:none">
+        <div class="panel">
+            <h1>Cartinha desbloqueadaaaaa</h1>
+            <div class="note" id="letterText"></div>
+            <div class="btns">
+                <button id="playAgain">Jogar mais</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="overlay" id="gameover" style="display:none">
+        <div class="panel center">
+            <h1>naaaaaao, tu perdeu mo... 😭</h1>
+            <p class="muted">Score: <b id="finalScore"></b></p>
+            <div class="btns">
+                <button id="restartBtn2">Tentar de novo</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast">Pausa: toque no topo direito</div>
+
+    <script>
+        /* ======== PERSONALIZAÇÃO RÁPIDA ======== */
+        const HER_NAME = "Nicole";
+        const LETTER_NAME = "NICOLE";
+        const LOVE_LETTER = `oi mo, minha rapunzel 
+        eu fiz esse joguinho pra quando bater saudade ou estiver mal. cada coração que tu pega é um carinho meu, e cada letra é um passo rumo à essa cartinha.
+        obrigado por me fazer sorrir em dias difíceis e por ser meu cantinho favorito desse universo. E ja adianto que, TE AMO MAAAAIS kkkkkk, se cuida e tô aqui, 
+        hoje e no futuro que a gente tá construindo.
+        com amor, ${HER_NAME === "Nicole" ? "o João" : "eu rs"} ❤️`;
+        /* ======================================= */
+
+        const cvs = document.getElementById('game');
+        const ctx = cvs.getContext('2d');
+        const dpr = Math.max(1, Math.min(window.devicePixelRatio || 1, 2));
+
+        let W = 0, H = 0;
+        function resize() {
+            W = Math.floor(window.innerWidth * dpr);
+            H = Math.floor(window.innerHeight * dpr);
+            cvs.width = W; cvs.height = H;
+        }
+        resize(); addEventListener('resize', resize);
+
+        const state = { running: false, paused: false, over: false, unlocked: false };
+        const hud = {
+            scoreEl: document.getElementById('score'),
+            livesEl: document.getElementById('lives'),
+            bestEl: document.getElementById('best'),
+            spdEl: document.getElementById('spd'),
+            lettersBox: document.getElementById('letters')
+        };
+        const overlays = {
+            menu: document.getElementById('menu'),
+            pause: document.getElementById('pause'),
+            letter: document.getElementById('letter'),
+            gameover: document.getElementById('gameover')
+        };
+        document.getElementById('howBtn').onclick = () => { const h = document.getElementById('how'); h.style.display = h.style.display ? '' : 'none'; };
+        document.getElementById('startBtn').onclick = start;
+        document.getElementById('resumeBtn').onclick = resume;
+        document.getElementById('restartBtn1').onclick = restart;
+        document.getElementById('restartBtn2').onclick = restart;
+        document.getElementById('playAgain').onclick = restart;
+
+        const toast = document.getElementById('toast');
+        function showToast(msg) { toast.textContent = msg; toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 1800); }
+
+        // game data
+        let score = 0, best = Number(localStorage.getItem('LC_best') || 0), lives = 3, speed = 1;
+        hud.bestEl.textContent = best;
+
+        const player = {
+            w: 90, h: 26, x: W / 2, y: H - 70 * dpr, targetX: null
+        };
+
+        const hearts = [];
+        const pops = []; // +1 text
+        const lettersToGet = LETTER_NAME.split('');
+        const got = new Set();
+
+        function setupLettersUI() {
+            hud.lettersBox.innerHTML = '';
+            lettersToGet.forEach(ch => {
+                const s = document.createElement('span');
+                s.textContent = ch;
+                hud.lettersBox.appendChild(s);
+            });
+        }
+        setupLettersUI();
+
+        function spawnHeart(isLetter = false, ch = null) {
+            const size = 12 + Math.random() * 12;
+            hearts.push({
+                x: (20 + Math.random() * (W - 40)),
+                y: -30,
+                vy: (1.2 + Math.random() * 0.7) * dpr * speed,
+                size,
+                letter: isLetter ? ch : null,
+                rot: Math.random() * Math.PI,
+                vr: (Math.random() * 0.02 - 0.01)
+            });
+        }
+        // ======= PRESETS (ajuste aqui) =======
+        // Spawn (quantidade)
+        const BASE_MS = 600;          // intervalo inicial entre spawns (ms) — maior = começa mais leve
+        const MIN_MS = 340;          // intervalo mínimo (ms) — nunca fica mais rápido que ~ 1000/340 ≈ 2.9/s
+        const SLOPE = 0.8;          // o quanto o score reduz o intervalo (aceleração)
+
+        // Limites de densidade
+        const MAX_ONSCREEN = 6;       // máximo de corações simultâneos visíveis
+        const MAX_PER_SEC = 3;       // teto de corações por segundo (pode usar float: ex. 2.5)
+
+        // Letras
+        const LETTER_RATE = 15;               // 1 letra a cada N spawns que realmente aconteceram
+        const LETTER_RESPECTS_CAPS = true;   // true = letra também respeita MAX_ONSCREEN/MAX_PER_SEC
+        const COUNT_LETTER_IN_RATE = true;   // true = letra conta no MAX_PER_SEC; false = não conta
+
+        // Queda (velocidade)
+        const SPEED_SLOPE = 1 / 80;     // aceleração por ponto de score
+        const SPEED_MAX_EXTRA = 0.8;  // teto do "extra" de velocidade (1 + extra)
+        // =====================================
+
+        let heartTimer = 0, letterStep = 0;
+        let windowMs = 0, spawnedInWindow = 0;
+
+        function drawHeart(x, y, s, fill = "#ff526e") {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(0.2 * Math.sin(y * 0.01) + 0.02);
+            ctx.fillStyle = fill;
+            ctx.beginPath();
+            // nice heart path
+            ctx.moveTo(0, -s * 0.32);
+            ctx.bezierCurveTo(s * 0.6, -s * 1.05, s * 1.3, -s * 0.1, 0, s * 1.1);
+            ctx.bezierCurveTo(-s * 1.3, -s * 0.1, -s * 0.6, -s * 1.05, 0, -s * 0.32);
+            ctx.closePath();
+            ctx.fill();
+            ctx.restore();
+        }
+
+        function drawEnvelope() {
+            const { x, y, w, h } = player;
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.fillStyle = "#ffe8ec";
+            ctx.strokeStyle = "#f5c4cf";
+            ctx.lineWidth = 2 * dpr;
+            // body
+            roundRect(ctx, -w / 2, -h / 2, w, h, 6 * dpr, true, true);
+            // flap
+            ctx.beginPath();
+            ctx.moveTo(-w / 2, -h / 2);
+            ctx.lineTo(0, h * 0.05 - h / 2);
+            ctx.lineTo(w / 2, -h / 2);
+            ctx.closePath();
+            ctx.fillStyle = "#ffd7e2"; ctx.fill();
+            // tiny heart stamp
+            drawHeart(0, -h / 2 - 2, 6 * dpr, "#ff4d6d");
+            ctx.restore();
+        }
+        function roundRect(c, x, y, w, h, r, fill, stroke) {
+            if (w < 2 * r) r = w / 2; if (h < 2 * r) r = h / 2;
+            c.beginPath();
+            c.moveTo(x + r, y);
+            c.arcTo(x + w, y, x + w, y + h, r);
+            c.arcTo(x + w, y + h, x, y + h, r);
+            c.arcTo(x, y + h, x, y, r);
+            c.arcTo(x, y, x + w, y, r);
+            c.closePath();
+            if (fill) c.fill(); if (stroke) c.stroke();
+        }
+
+        function collideHeart(h) {
+            // rect collision
+            const left = player.x - player.w / 2, right = player.x + player.w / 2;
+            const top = player.y - player.h / 2, bottom = player.y + player.h / 2;
+            return (h.x > left && h.x < right && h.y + h.size > top && h.y - h.size < bottom);
+        }
+
+        function addPop(x, y, txt) {
+            pops.push({ x, y, txt, a: 1 });
+        }
+
+        function update(dt) {
+            // janela de 1s para limitar taxa
+            windowMs += dt;
+            if (windowMs >= 1000) { windowMs -= 1000; spawnedInWindow = 0; }
+
+            heartTimer += dt;
+            const freq = Math.max(BASE_MS - score * SLOPE, MIN_MS); // ms por tentativa de spawn
+
+            if (heartTimer >= freq) {
+                // seria a vez de letra? (mas só conta quando spawnar de verdade)
+                const isLetterTurn = (letterStep % LETTER_RATE === 0);
+                const next = isLetterTurn ? lettersToGet.find(ch => !got.has(ch)) : null;
+                const hasLetterToSpawn = Boolean(next);
+
+                // limites gerais (afetam todos se LETTER_RESPECTS_CAPS for true)
+                const underCaps = (hearts.length < MAX_ONSCREEN) && (spawnedInWindow < MAX_PER_SEC);
+
+                // pode spawnar neste tick?
+                const canSpawn = LETTER_RESPECTS_CAPS
+                    ? underCaps
+                    : (underCaps || hasLetterToSpawn);
+
+                if (canSpawn) {
+                    heartTimer -= freq;               // timing suave
+                    if (hasLetterToSpawn) {
+                        if (COUNT_LETTER_IN_RATE) spawnedInWindow++; // letra conta no teto/segundo?
+                        spawnHeart(true, next);
+                    } else {
+                        spawnedInWindow++;            // normal sempre conta
+                        spawnHeart(false);
+                    }
+                    // avança "vez da letra" somente quando spawnou algo
+                    letterStep++;
+                }
+            }
+
+            // speed scaling
+            speed = 1 + Math.min(score * SPEED_SLOPE, SPEED_MAX_EXTRA);
+            hud.spdEl.textContent = `${speed.toFixed(1)}x`;
+
+            // smooth follow to pointer
+            if (player.targetX != null) {
+                player.x += (player.targetX - player.x) * Math.min(1, dt / 80);
+            }
+            player.x = Math.max(player.w / 2, Math.min(W - player.w / 2, player.x));
+
+            // hearts
+            for (let i = hearts.length - 1; i >= 0; i--) {
+                const h = hearts[i];
+                h.y += h.vy * (0.9 + speed * 0.1);
+                h.rot += h.vr;
+                if (collideHeart(h)) {
+                    score++; hud.scoreEl.textContent = score;
+                    addPop(h.x, h.y, h.letter ? h.letter : "+1");
+                    // got letter?
+                    if (h.letter) {
+                        got.add(h.letter);
+                        const idx = lettersToGet.indexOf(h.letter);
+                        if (idx > -1) hud.lettersBox.children[idx].classList.add('got');
+                        // desbloqueou tudo?
+                        if (lettersToGet.every(ch => got.has(ch)) && !state.unlocked) {
+                            state.unlocked = true;
+                            setTimeout(openLetter, 300);
+                        }
+                    }
+                    hearts.splice(i, 1);
+                    continue;
+                }
+                if (h.y - h.size > H) {
+                    hearts.splice(i, 1);
+                    lives--; hud.livesEl.textContent = lives;
+                    if (lives <= 0) { gameOver(); return; }
+                }
+            }
+
+            // pops
+            for (let i = pops.length - 1; i >= 0; i--) {
+                const p = pops[i]; p.y -= 0.4 * dpr; p.a -= 0.02; if (p.a <= 0) pops.splice(i, 1);
+            }
+        }
+
+        function render() {
+            // bg
+            ctx.clearRect(0, 0, W, H);
+
+            // confetti subtle top
+            for (let i = 0; i < 30; i++) {
+                const x = (i * 123) % W; const y = (i * 77) % Math.min(260 * dpr, H);
+                ctx.globalAlpha = 0.07;
+                drawHeart(x, y, 8 * dpr, i % 3 ? "#ffffff" : "#ffd9e1");
+            }
+            ctx.globalAlpha = 1;
+
+            // player
+            drawEnvelope();
+
+            // hearts
+            hearts.forEach(h => {
+                drawHeart(h.x, h.y, h.size * dpr, "#ff4d6d");
+                if (h.letter) {
+                    ctx.fillStyle = "#fff"; ctx.font = `${Math.max(12, h.size * 1.1)}px 700 system-ui`;
+                    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+                    ctx.fillText(h.letter, h.x, h.y);
+                }
+            });
+
+            // pops
+            pops.forEach(p => {
+                ctx.globalAlpha = p.a; ctx.fillStyle = "#fff";
+                ctx.font = `bold ${16 * dpr}px system-ui`; ctx.textAlign = "center"; ctx.fillText(p.txt, p.x, p.y);
+                ctx.globalAlpha = 1;
+            });
+        }
+
+        // main loop
+        let last = performance.now();
+        function loop(t) {
+            if (!state.running || state.paused) return;
+            const dt = Math.min(48, t - last); last = t;
+            update(dt);
+            render();
+            requestAnimationFrame(loop);
+        }
+
+        function start() {
+            overlays.menu.style.display = 'none';
+            state.running = true; state.paused = false; state.over = false; state.unlocked = false;
+            score = 0; lives = 3; speed = 1; hearts.length = 0; pops.length = 0; got.clear(); setupLettersUI();
+            hud.scoreEl.textContent = 0; hud.livesEl.textContent = 3; showToast("Pausa: toque no topo direito");
+            last = performance.now(); requestAnimationFrame(loop);
+        }
+        function pause() {
+            if (!state.running || state.paused) return;
+            state.paused = true; overlays.pause.style.display = '';
+        }
+        function resume() {
+            if (!state.paused) return;
+            overlays.pause.style.display = 'none'; state.paused = false; last = performance.now(); requestAnimationFrame(loop);
+        }
+        function restart() {
+            overlays.pause.style.display = 'none';
+            overlays.gameover.style.display = 'none';
+            overlays.letter.style.display = 'none';
+            start();
+        }
+        function openLetter() {
+            state.paused = true; overlays.letter.style.display = '';
+            document.getElementById('letterText').innerText = LOVE_LETTER.replaceAll('\n', '\n');
+        }
+        function gameOver() {
+            state.running = false; state.over = true;
+            overlays.gameover.style.display = '';
+            document.getElementById('finalScore').textContent = score;
+            if (score > best) { best = score; hud.bestEl.textContent = best; localStorage.setItem('LC_best', best); }
+        }
+
+        // input
+        function setTargetFromEvt(e) {
+            player.targetX = (e.clientX || (e.touches && e.touches[0].clientX) || 0) * dpr;
+        }
+        ['pointerdown', 'pointermove', 'touchstart', 'touchmove'].forEach(ev => {
+            window.addEventListener(ev, e => { setTargetFromEvt(e); }, { passive: false });
+        });
+        window.addEventListener('resize', () => { player.y = H - 70 * dpr; });
+
+        // topo direito = pause
+        window.addEventListener('pointerdown', e => {
+            const x = e.clientX * dpr, y = e.clientY * dpr;
+            if (x > W - 120 * dpr && y < 100 * dpr && state.running && !state.unlocked && !state.over) {
+                pause();
+            }
+        });
+    </script>
+</body>
+
+</html>
