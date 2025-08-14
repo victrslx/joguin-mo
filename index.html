@@ -390,16 +390,16 @@
         }
         // ======= PRESETS (ajuste aqui) =======
         // Spawn (quantidade)
-        const BASE_MS = 600;          // intervalo inicial entre spawns (ms) — maior = começa mais leve
+        const BASE_MS = 400;          // intervalo inicial entre spawns (ms) — maior = começa mais leve
         const MIN_MS = 340;          // intervalo mínimo (ms) — nunca fica mais rápido que ~ 1000/340 ≈ 2.9/s
-        const SLOPE = 4;          // o quanto o score reduz o intervalo (aceleração)
+        const SLOPE = 5;          // o quanto o score reduz o intervalo (aceleração)
 
         // Limites de densidade
-        const MAX_ONSCREEN = 4;       // máximo de corações simultâneos visíveis
+        const MAX_ONSCREEN = 2;       // máximo de corações simultâneos visíveis
         const MAX_PER_SEC = 3;       // teto de corações por segundo (pode usar float: ex. 2.5)
 
         // Letras
-        const LETTER_RATE = 4;               // 1 letra a cada N spawns que realmente aconteceram
+        const LETTER_RATE = 10;               // 1 letra a cada N spawns que realmente aconteceram
         const LETTER_RESPECTS_CAPS = true;   // true = letra também respeita MAX_ONSCREEN/MAX_PER_SEC
         const COUNT_LETTER_IN_RATE = true;   // true = letra conta no MAX_PER_SEC; false = não conta
 
